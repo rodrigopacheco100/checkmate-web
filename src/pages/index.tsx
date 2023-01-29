@@ -2,73 +2,73 @@ import Logo from '~/assets/logo.svg';
 import { NextPage, GetServerSideProps } from 'next';
 import { FormEvent, useMemo, useState } from 'react';
 
-type Todo = {
+type Task = {
   id: number;
   title: string;
   isCompleted: boolean;
 };
 
 type HomeProps = {
-  todos: Todo[];
+  tasks: Task[];
 };
 
-const Home: NextPage<HomeProps> = ({ todos: todosFromApi }) => {
-  const [todos, setTodos] = useState<Todo[]>(todosFromApi);
-  const [newTodoTitle, setNewTodoTitle] = useState('');
+const Home: NextPage<HomeProps> = ({ tasks: tasksFromApi }) => {
+  const [tasks, setTasks] = useState<Task[]>(tasksFromApi);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  const { completedTodosAmount, todosAmount } = useMemo(() => {
-    const completedTodosAmount = todos.filter(todo => todo.isCompleted).length;
-    const todosAmount = todos.length;
+  const { completedTasksAmount, tasksAmount } = useMemo(() => {
+    const completedTasksAmount = tasks.filter(task => task.isCompleted).length;
+    const tasksAmount = tasks.length;
 
     return {
-      completedTodosAmount,
-      todosAmount
+      completedTasksAmount,
+      tasksAmount
     };
-  }, [todos]);
+  }, [tasks]);
 
-  const toggleTodoCompleted = (todoId: Todo['id']) => {
-    const todoIndex = todos.findIndex(todo => todo.id === todoId);
+  const toggleTaskCompleted = (taskId: Task['id']) => {
+    const taskIndex = tasks.findIndex(task => task.id === taskId);
 
-    if (todoIndex < 0) return;
+    if (taskIndex < 0) return;
 
-    setTodos(todos =>
-      todos.reduce<Todo[]>((acc, todo, index) => {
-        if (todoIndex === index) {
+    setTasks(tasks =>
+      tasks.reduce<Task[]>((acc, task, index) => {
+        if (taskIndex === index) {
           acc.push({
-            ...todo,
-            isCompleted: !todo.isCompleted
+            ...task,
+            isCompleted: !task.isCompleted
           });
           return acc;
         }
 
-        acc.push(todo);
+        acc.push(task);
         return acc;
       }, [])
     );
   };
 
-  const createTodo = (event: FormEvent) => {
+  const createTask = (event: FormEvent) => {
     event.preventDefault();
-    const title = newTodoTitle.trim();
+    const title = newTaskTitle.trim();
 
     if (title.length === 0) return;
 
     const id = Math.floor(Math.random() * 1000000000);
 
-    setTodos(todos => [
-      ...todos,
+    setTasks(tasks => [
+      ...tasks,
       {
         id,
-        title: newTodoTitle,
+        title: newTaskTitle,
         isCompleted: false
       }
     ]);
 
-    setNewTodoTitle('');
+    setNewTaskTitle('');
   };
 
-  const deleteTodo = (todoId: Todo['id']) => {
-    setTodos(todos => todos.filter(todo => todo.id !== todoId));
+  const deleteTask = (taskId: Task['id']) => {
+    setTasks(tasks => tasks.filter(task => task.id !== taskId));
   };
 
   return (
@@ -79,13 +79,13 @@ const Home: NextPage<HomeProps> = ({ todos: todosFromApi }) => {
 
       <main className="max-w-3xl px-2 mx-auto -mt-6">
         <div className="flex flex-col">
-          <form className="flex h-12 gap-2" onSubmit={createTodo}>
+          <form className="flex h-12 gap-2" onSubmit={createTask}>
             <input
               className="flex-1 bg-checkmate-gray-500 rounded-lg p-4 text-checkmate-gray-300"
               type="text"
               placeholder="Adicione uma nova tarefa"
-              value={newTodoTitle}
-              onChange={e => setNewTodoTitle(e.target.value)}
+              value={newTaskTitle}
+              onChange={e => setNewTaskTitle(e.target.value)}
             />
             <button
               className="w-24 bg-gradient-to-r from-checkmate-blue-default to-checkmate-purple-dark rounded-lg font-bold text-white text-sm"
@@ -99,39 +99,39 @@ const Home: NextPage<HomeProps> = ({ todos: todosFromApi }) => {
             <div className="flex flex-row gap-2">
               <span className="text-checkmate-blue-default">Tarefas criadas</span>
               <span className="flex justify-center items-center bg-checkmate-gray-400 text-white text-xs py-0.5 px-2 rounded-full">
-                {todosAmount}
+                {tasksAmount}
               </span>
             </div>
             <div className="flex flex-row gap-2">
               <span className="text-checkmate-purple-default">Concluídas</span>
               <span className="flex justify-center items-center bg-checkmate-gray-400 text-white text-xs py-0.5 px-2 rounded-full">
-                {completedTodosAmount} de {todosAmount}
+                {completedTasksAmount} de {tasksAmount}
               </span>
             </div>
           </header>
 
-          <section className="mt-6">
-            {todos.map(todo => (
-              <div
+          <ul className="mt-6">
+            {tasks.map(task => (
+              <li
                 className="flex flex-row gap-3 justify-between mb-3 p-4 rounded-lg bg-checkmate-gray-400"
-                key={todo.id}
+                key={task.id}
               >
-                <label className="flex flex-1 gap-3 text-sm text-checkmate-gray-100" htmlFor={`checkbox-${todo.id}`}>
+                <label className="flex flex-1 gap-3 text-sm text-checkmate-gray-100" htmlFor={`checkbox-${task.id}`}>
                   <input
                     className="w-6 h-6 rounded-full border-2 border-checkmate-blue-default bg-transparent hover:bg-checkmate-gray-300 checked:bg-checkmate-purple-dark checked:hover:bg-checkmate-purple-default"
-                    id={`checkbox-${todo.id}`}
+                    id={`checkbox-${task.id}`}
                     type="checkbox"
-                    checked={todo.isCompleted}
-                    onChange={() => toggleTodoCompleted(todo.id)}
+                    checked={task.isCompleted}
+                    onChange={() => toggleTaskCompleted(task.id)}
                   />
-                  <span className="overflow-hidden">{todo.title}</span>
+                  <span className="overflow-hidden">{task.title}</span>
                 </label>
-                <button className="self-start" type="button" onClick={() => deleteTodo(todo.id)}>
+                <button className="self-start" type="button" onClick={() => deleteTask(task.id)}>
                   🗑️
                 </button>
-              </div>
+              </li>
             ))}
-          </section>
+          </ul>
         </div>
       </main>
     </>
@@ -141,7 +141,7 @@ const Home: NextPage<HomeProps> = ({ todos: todosFromApi }) => {
 export const getServerSideProps: GetServerSideProps<HomeProps> = async () => {
   return {
     props: {
-      todos: [
+      tasks: [
         {
           id: 1,
           title: 'Tempor amet Lorem eiusmod excepteur nisi eu cillum incididunt.',
